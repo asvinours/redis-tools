@@ -1,16 +1,14 @@
 redis-tools
 ===========
 
-Redis command-line tools to allow mass export, import and deletion of keys
+Redis command-line tools to allow mass export and deletion of keys
 
 ## Introduction
 
-Redis doesn't come with any tools to allow groups of keys to be imported and exported. You can build a database, save it (as dump.rdb) and use it as another Redis instance's database, but sometimes you just want to export a group of keys from one database (e.g. your staging environment) and apply them to another database (e.g. production).
+Redis doesn't come with any tools to allow groups of keys to be exported. You can build a database, save it (as dump.rdb) and use it as another Redis instance's database, but sometimes you just want to export a group of keys from one database (e.g. your staging environment) and apply them to another database (e.g. production).
 
 Requirements:
 * PHP with Redis extension
-
-N.B this only works with simple key/value pairs e.g. not hashes or other higher order Redis data types.
 
 ## Redis export
 
@@ -18,14 +16,28 @@ This tool exports a group of single key/value pairs to stdout. The output format
 
 ```
   # export all keys starting with ABC to stdout
-  ./redis_export.php "ABC*"  
+  ./redis_export_raw.php -P"ABC*" -h"localhost"
   
   # export keys with ABC anywhere in the key, to a file
-  ./redis_export.php "*ABC* > text.txt
+  ./redis_export_raw.php -P"*ABC* -h"localhost" > text.txt
   
   # export all keys to a file
-  ./redis_export.php "*" > test.txt
+  ./redis_export_raw.php -P"*" -h"localhost" > test.txt
   
+```
+
+If you want a list a command, in a human format:
+
+```
+  # export all keys starting with ABC to stdout
+  ./redis_export.php -P"ABC*" -h"localhost"
+
+  # export keys with ABC anywhere in the key, to a file
+  ./redis_export.php -P"*ABC* -h"localhost" > text.txt
+
+  # export all keys to a file
+  ./redis_export.php -P"*" -h"localhost" > test.txt
+
 ```
 
 ## Redis import
@@ -34,16 +46,17 @@ Data exported using "redis_export.php", can be imported directly into a Redis se
 
 ```
   # apply the data stored in test.txt to the local Redis server
-  cat test.txt | ./redis_import.php
-```
-
-B.t.w redis_import.php is a one-liner. It basically uses "nc" to pipe the data to the correct port. If you have a modern version of Redis, you can use:
+  cat test.txt | redis-cli -h new_server.local --pipe
 
 ```
-  cat test.txt | redis-cli --pipe
+
+If you have used the second script, you now have a list of human format command
+
+```
+  cat test.txt | redis-cli -h new_server.local
+
 ```
 
-which will give you feedback of whether your commands worked or not, whereas redis_import.php does not.
 
 ## Redis delete
 
@@ -51,5 +64,6 @@ To delete a range of keys:
 
 ```
   # delete all keys starting with ABC
-  ./redis_delete.php 'ABC*'
+  ./redis_delete.php -P'ABC*' -h"localhost"
+
 ```
